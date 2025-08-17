@@ -1,0 +1,340 @@
+import React, { useState } from 'react';
+import { Star, Search, Mail, Home } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+import toast, { Toaster } from 'react-hot-toast';
+
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+);
+
+function App() {
+  const [formData, setFormData] = useState({
+    wishlist: '',
+    name: '',
+    gender: '',
+    email: '',
+    budget: '',
+    location: '',
+  });
+
+  const [contactForm, setContactForm] = useState({
+    email: '',
+    message: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { error } = await supabase
+        .from('property_requests')
+        .insert([formData]);
+
+      if (error) throw error;
+
+      toast.success('Your property request has been submitted successfully!');
+      setFormData({
+        wishlist: '',
+        name: '',
+        gender: '',
+        email: '',
+        budget: '',
+        location: '',
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to submit your request. Please try again.');
+    }
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert([contactForm]);
+
+      if (error) throw error;
+
+      toast.success('Your message has been sent successfully!');
+      setContactForm({
+        email: '',
+        message: '',
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to send your message. Please try again.');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setContactForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Toaster position="top-right" />
+      
+      {/* Top Section */}
+      <div className="bg-white p-12 text-center">
+        <div className="relative">
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+            <div className="w-12 h-6 border-t-2 border-teal-500 flex items-center justify-center">
+              <Home className="w-4 h-4 text-teal-500" />
+            </div>
+          </div>
+        </div>
+        <h1 className="text-5xl font-light text-teal-900 mb-4">Dream Property Connector</h1>
+        <p className="text-teal-600 mb-4">Connecting Dreams with Reality</p>
+        <div className="inline-block px-6 py-2 rounded-full bg-teal-50 text-teal-700">
+          Free Property Matching Service
+        </div>
+      </div>
+
+      {/* Main Content Section */}
+      <div className="flex-1 flex flex-col md:flex-row">
+        {/* Left Section - Property Search Form */}
+        <div className="w-full md:w-1/2 bg-[#e6f4f1] p-8 md:p-12 flex items-center justify-center">
+          <div className="w-full max-w-md">
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+              <h2 className="text-2xl font-light text-teal-900 mb-6 text-center">Find Your Dream Property</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="location" className="block text-sm text-teal-900">
+                    Preferred Location:
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    required
+                    placeholder="e.g., Ryde, North Sydney"
+                    className="w-full px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-teal-500"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="budget" className="block text-sm text-teal-900">
+                    Budget Range:
+                  </label>
+                  <input
+                    type="text"
+                    id="budget"
+                    name="budget"
+                    required
+                    placeholder="e.g., $1.2M - $1.5M"
+                    className="w-full px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-teal-500"
+                    value={formData.budget}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="wishlist" className="block text-sm text-teal-900">
+                    Property Requirements:
+                  </label>
+                  <textarea
+                    id="wishlist"
+                    name="wishlist"
+                    placeholder="e.g., Unit/House/type 3 bedrooms, 2 bathrooms, garden, close to schools"
+                    required
+                    rows={3}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 resize-none"
+                    value={formData.wishlist}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="name" className="block text-sm text-teal-900">
+                    Your Name:
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    className="w-full px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-teal-500"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm text-teal-900">Gender:</label>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="Male"
+                        required
+                        className="mr-2 text-teal-500"
+                        checked={formData.gender === 'Male'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="text-teal-900">Male</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="Female"
+                        required
+                        className="mr-2 text-teal-500"
+                        checked={formData.gender === 'Female'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="text-teal-900">Female</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="email" className="block text-sm text-teal-900">
+                    Email Address:
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    className="w-full px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-teal-500"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-teal-600 text-white py-3 px-6 rounded-full hover:bg-teal-700 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Connect Me with Properties</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section - Background Image and Contact Form */}
+        <div className="w-full md:w-1/2 relative min-h-[600px]">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: 'url("https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+          
+          {/* Contact Form */}
+          <div className="relative z-10 p-8">
+            <a
+              href="#contact"
+              className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full hover:bg-white transition-colors"
+            >
+              <Mail className="w-4 h-4 text-teal-500" />
+              <span className="text-teal-900">Contact Us</span>
+            </a>
+
+            <div id="contact" className="mt-4 bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-lg max-w-sm">
+              <form onSubmit={handleContactSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="contact-email" className="block text-sm text-teal-900 mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="contact-email"
+
+                    name="email"
+                    required
+                    className="w-full px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-teal-500"
+                    value={contactForm.email}
+                    onChange={handleContactChange}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm text-teal-900 mb-1">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={4}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500"
+                    value={contactForm.message}
+                    onChange={handleContactChange}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-teal-600 text-white py-2 px-6 rounded-full hover:bg-teal-700 transition-colors"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Section */}
+      <footer className="bg-teal-900 text-white py-8 px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="text-xl font-light mb-4 flex items-center">
+              <Home className="w-5 h-5 mr-2" />
+              Dream Property Connector
+            </h3>
+            <p className="text-teal-200 text-sm">
+              We connect property seekers with their dream homes through our personalized matching service.
+            </p>
+          </div>
+          
+          <div>
+            <h3 className="text-xl font-light mb-4">Quick Links</h3>
+            <ul className="space-y-2 text-teal-200">
+              <li><a href="#" className="hover:text-white transition-colors">Home</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Services</a></li>
+              <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-xl font-light mb-4">Contact Us</h3>
+            <address className="not-italic text-teal-200 text-sm space-y-2">
+              <p>123 Property Lane</p>
+              <p>Sydney, NSW 2000</p>
+              <p>Email: info@dreampropertyconnector.com</p>
+              <p>Phone: (02) 1234 5678</p>
+            </address>
+          </div>
+        </div>
+        
+        <div className="mt-8 pt-8 border-t border-teal-800 text-center text-teal-300 text-sm">
+          <p>© {new Date().getFullYear()} Dream Property Connector. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
